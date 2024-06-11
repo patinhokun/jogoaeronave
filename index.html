@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<!--
+Nome: Gabriela Monforte Dias  nº: 10  Turma: 3A
+Nome: Julia De Souza De Nobrega  nº: 18  Turma: 3A
+-->
+
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jogo Continuação</title>
+<script src="jogo.js"></script>
+</head>
+<body>
+<canvas id="canv" width="800" height="700"></canvas>
+<input type="button" id="btnSom" value="tocar" onclick="tocaSom()"/>
+
+<script>
+    const canvas = document.getElementById("canv");
+    const ctx = canvas.getContext("2d");
+
+    const fundo1 = new Image();
+    fundo1.src = "cenario.jpg"; 
+
+    const fundo2 = new Image();
+    fundo2.src = "galaxia.jpg";
+
+    let fundoAtual = fundo1;
+
+    const nave = new Image();
+    nave.src = "areonave.png";
+
+    const naveInimiga = new Image();
+    naveInimiga.src = "inimigo.png"; 
+
+    let x = 400;
+    const naveWidth = 80;
+    const naveHeight = 80;
+
+    let inimigoX = Math.random() * (canvas.width - naveWidth); 
+    let inimigoY = 20; 
+    const inimigoSpeed = 2;
+    let inimigoDirecao = 1; 
+
+    const somTiro = new Audio();
+    somTiro.src = 'somtiro.mp3';
+    somTiro.volume = 0.2;
+    somTiro.load();
+    somTiro.currentTime = 0.0;
+
+    let posY = 0;
+    const velocidade = 1;
+
+    fundo1.onload = function() {
+        animaFundo();
+        desenhaCenario();
+        desenhaNave();
+        desenhaNaveInimiga();
+        moveNaveInimiga();
+    }
+
+    function desenhaCenario() {
+        ctx.drawImage(fundoAtual, 0, 0, canvas.width, canvas.height);
+    }
+
+    function desenhaNave() {
+        ctx.drawImage(nave, x - naveWidth / 2, 700 - naveHeight, naveWidth, naveHeight);
+    }
+
+    function desenhaNaveInimiga() {
+        ctx.drawImage(naveInimiga, inimigoX, inimigoY, naveWidth, naveHeight);
+    }
+
+    function animaFundo() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        atualizaFundo();
+        desenhaFundo();
+        desenhaNave();
+        desenhaNaveInimiga();
+        requestAnimationFrame(animaFundo);
+    }
+
+    function atualizaFundo() {
+        posY += velocidade;
+        if (posY > fundoAtual.height) {
+            posY = 0;
+        }
+    }
+
+    function desenhaFundo() {
+        const y = posY - fundoAtual.height;
+        ctx.drawImage(fundoAtual, 0, y, canvas.width, fundoAtual.height);
+        ctx.drawImage(fundoAtual, 0, posY, canvas.width, fundoAtual.height);
+    }
+
+    document.addEventListener("keydown", function(event) { 
+        movimentaNaveTeclado(event.keyCode);
+    });
+
+    function movimentaNaveTeclado(tecla) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        desenhaCenario();
+        if (tecla == 37) { 
+            x -= 50;
+            x = Math.max(naveWidth / 2, x);
+        } else if (tecla == 39) {  
+            x += 50;
+            x = Math.min(canvas.width - naveWidth / 2, x);
+        } else if (tecla == 32) { 
+            disparaTiro(x, 700 - naveHeight);
+            somTiro.currentTime = 0; 
+            somTiro.play(); 
+        desenhaNave();
+        desenhaNaveInimiga();
+        }
+    }
+
+    function disparaTiro(col, lin) {
+        ctx.fillStyle = "black";
+
+        function moveTiro() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            desenhaFundo();
+            desenhaNave();
+            desenhaNaveInimiga();
+            ctx.fillRect(col - 1, lin, 2, 5);
+            lin -= 6;
+            if (lin > -5) {
+                requestAnimationFrame(moveTiro);
+            }
+        }
+        moveTiro();
+    }
+
+    function moveNaveInimiga() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        desenhaFundo();
+        desenhaNave();
+        desenhaNaveInimiga();
+
+        inimigoX += inimigoDirecao * inimigoSpeed; 
+        if (inimigoX <= 0 || inimigoX >= canvas.width - naveWidth) {
+            inimigoDirecao *= -1;
+        }
+        requestAnimationFrame(moveNaveInimiga);
+    }
+
+    function trocaCenario() {
+        if (fundoAtual === fundo1) {
+            fundoAtual = fundo2;
+        } else {
+            fundoAtual = fundo1;
+        }
+    }
+
+    function tocaSom() {
+        if (!tocando) {
+            somTiro.play();
+            tocando = true;
+            document.getElementById("btnSom").value = "pausar";
+        } else {
+            somTiro.pause();
+            tocando = false;
+            document.getElementById("btnSom").value = "tocar";
+        }
+    }
+</script>
+</body>
+</html>
